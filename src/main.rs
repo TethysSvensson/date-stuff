@@ -140,10 +140,10 @@ fn main() {
             .zip(render(m + 1).iter())
             .zip(render(m + 2).iter())
         {
-            if l0.trim().len() > 0 || l1.trim().len() > 0 || l2.trim().len() > 0 {
+            if !(l0.trim().is_empty() && l1.trim().is_empty() && l2.trim().is_empty()) {
                 println!("{}    {}    {}", l0, l1, l2);
             }
         }
-        println!("");
+        println!();
     }
 }
