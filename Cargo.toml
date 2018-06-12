@@ -1,0 +1,8 @@
+[package]
+name = "date-stuff"
+version = "0.1.0"
+authors = ["Mathias Svensson <freaken@freaken.dk>"]
+
+[dependencies]
+chrono = "0.4.3"
+colored = "1.6.0"
