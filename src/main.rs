@@ -4,6 +4,7 @@ extern crate colored;
 use chrono::naive::{IsoWeek, NaiveDate};
 use chrono::{Datelike, Local, Weekday};
 use colored::Colorize;
+use std::env;
 
 trait WeekExt: Sized {
     fn first_date(self) -> Option<NaiveDate>;
@@ -44,7 +45,8 @@ impl IsInMonthExt for IsoWeek {
         self.first_date()
             .map(|day| day.is_in_month(month))
             .unwrap_or(false)
-            || self.last_date()
+            || self
+                .last_date()
                 .map(|day| day.is_in_month(month))
                 .unwrap_or(false)
     }
@@ -63,6 +65,34 @@ impl Month {
 
     fn first_week(self) -> Option<IsoWeek> {
         Some(self.first_date()?.iso_week())
+    }
+
+    fn pred(self) -> Month {
+        if self.month == 1 {
+            Month {
+                year: self.year.checked_sub(1).unwrap(),
+                month: 12,
+            }
+        } else {
+            Month {
+                year: self.year,
+                month: self.month - 1,
+            }
+        }
+    }
+
+    fn succ(self) -> Month {
+        if self.month == 12 {
+            Month {
+                year: self.year.checked_add(1).unwrap(),
+                month: 1,
+            }
+        } else {
+            Month {
+                year: self.year,
+                month: self.month + 1,
+            }
+        }
     }
 }
 
@@ -124,26 +154,35 @@ fn render_month(month: Month, today: NaiveDate) -> Option<[String; 8]> {
 
 fn main() {
     let today = Local::today().naive_local();
-    let render = |m| {
-        render_month(
-            Month {
-                year: today.year(),
-                month: m,
-            },
-            today,
-        ).unwrap()
-    };
+    let render = |y, m| render_month(Month { year: y, month: m }, today).unwrap();
 
-    for &m in &[1, 4, 7, 10] {
-        for ((l0, l1), l2) in render(m)
+    if env::args().any(|s| s == "--xiao") {
+        let cur_month = Month {
+            year: today.year(),
+            month: today.month(),
+        };
+
+        for ((l0, l1), l2) in render(cur_month.pred().year, cur_month.pred().month)
             .iter()
-            .zip(render(m + 1).iter())
-            .zip(render(m + 2).iter())
+            .zip(render(cur_month.year, cur_month.month).iter())
+            .zip(render(cur_month.succ().year, cur_month.succ().month).iter())
         {
             if !(l0.trim().is_empty() && l1.trim().is_empty() && l2.trim().is_empty()) {
                 println!("{}    {}    {}", l0, l1, l2);
             }
         }
-        println!();
+    } else {
+        for &m in &[1, 4, 7, 10] {
+            for ((l0, l1), l2) in render(today.year(), m)
+                .iter()
+                .zip(render(today.year(), m + 1).iter())
+                .zip(render(today.year(), m + 2).iter())
+            {
+                if !(l0.trim().is_empty() && l1.trim().is_empty() && l2.trim().is_empty()) {
+                    println!("{}    {}    {}", l0, l1, l2);
+                }
+            }
+            println!();
+        }
     }
 }
