@@ -1,10 +1,13 @@
 extern crate chrono;
 extern crate colored;
+#[macro_use]
+extern crate structopt;
 
 use chrono::naive::{IsoWeek, NaiveDate};
 use chrono::{Datelike, Local, Weekday};
 use colored::Colorize;
 use std::env;
+use structopt::StructOpt;
 
 trait WeekExt: Sized {
     fn first_date(self) -> Option<NaiveDate>;
@@ -136,7 +139,11 @@ fn render_month(month: Month, today: NaiveDate) -> Option<[String; 8]> {
         String::new(),
     ];
 
-    output[0] = format!("   {:^21}", format!("{}", month.first_date()?.format("%B")));
+    output[0] = format!(
+        "   {:^21}",
+        format!(" {} ", month.first_date()?.format("%B"))
+    );
+
     output[1] = "    Mo Tu We Th Fr Sa Su".to_string();
     let mut pos = 2;
     while cur_week.is_in_month(month) {
@@ -152,37 +159,130 @@ fn render_month(month: Month, today: NaiveDate) -> Option<[String; 8]> {
     Some(output)
 }
 
+#[derive(Debug, StructOpt)]
+#[structopt(name = "date-stuff", about = "A better cal replacement")]
+struct Opt {
+    #[structopt(short = "b")]
+    before: Option<u32>,
+    #[structopt(short = "a")]
+    after: Option<u32>,
+    #[structopt(short = "c")]
+    context: Option<u32>,
+    year: Option<i32>,
+    month: Option<u32>,
+}
+
+#[derive(Debug)]
+enum Command {
+    RenderMonths {
+        year: i32,
+        month: u32,
+        before: u32,
+        after: u32,
+    },
+    RenderYear {
+        year: i32,
+    },
+}
+
 fn main() {
+    let mut opt = Opt::from_args();
     let today = Local::today().naive_local();
-    let render = |y, m| render_month(Month { year: y, month: m }, today).unwrap();
 
-    if env::args().any(|s| s == "--xiao") {
-        let cur_month = Month {
-            year: today.year(),
-            month: today.month(),
-        };
+    let get_env = |var, def| -> u32 {
+        match env::var(var).map(|s| s.parse()).unwrap_or(Ok(def)) {
+            Ok(v) => v,
+            Err(e) => panic!("Could not parse {}: {:?}", var, e),
+        }
+    };
 
-        for ((l0, l1), l2) in render(cur_month.pred().year, cur_month.pred().month)
-            .iter()
-            .zip(render(cur_month.year, cur_month.month).iter())
-            .zip(render(cur_month.succ().year, cur_month.succ().month).iter())
-        {
-            if !(l0.trim().is_empty() && l1.trim().is_empty() && l2.trim().is_empty()) {
-                println!("{}    {}    {}", l0, l1, l2);
+    let before_noargs = get_env("DATE_BEFORE_NOARGS", 1);
+    let before_args = get_env("DATE_BEFORE_ARGS", 4);
+    let after_noargs = get_env("DATE_AFTER_NOARGS", 4);
+    let after_args = get_env("DATE_AFTER_ARGS", 4);
+
+    opt.before = opt.before.or(opt.context);
+    opt.after = opt.after.or(opt.context);
+
+    let cmd = match (opt.year, opt.month) {
+        (Some(year), Some(month)) => {
+            let before = opt.before.unwrap_or(before_args);
+            let after = opt.after.unwrap_or(after_args);
+            Command::RenderMonths {
+                year,
+                month,
+                before,
+                after,
             }
         }
-    } else {
-        for &m in &[1, 4, 7, 10] {
-            for ((l0, l1), l2) in render(today.year(), m)
-                .iter()
-                .zip(render(today.year(), m + 1).iter())
-                .zip(render(today.year(), m + 2).iter())
-            {
-                if !(l0.trim().is_empty() && l1.trim().is_empty() && l2.trim().is_empty()) {
-                    println!("{}    {}    {}", l0, l1, l2);
+        (Some(year), None) => Command::RenderYear { year },
+        (None, None) => {
+            let year = today.year();
+            let month = today.month();
+            let before = opt.before.unwrap_or(before_noargs);
+            let after = opt.after.unwrap_or(after_noargs);
+            Command::RenderMonths {
+                year,
+                month,
+                before,
+                after,
+            }
+        }
+        (None, Some(_month)) => unreachable!(),
+    };
+
+    let mut months = Vec::new();
+
+    match cmd {
+        Command::RenderYear { year } => {
+            months.extend((1..=12).map(|month| Month { year, month }));
+        }
+        Command::RenderMonths {
+            year,
+            month,
+            before,
+            after,
+        } => {
+            let mut cur_month = Month { year, month };
+            for _ in 0..before {
+                cur_month = cur_month.pred();
+            }
+            for _ in 0..(before + 1 + after) {
+                months.push(cur_month);
+                cur_month = cur_month.succ();
+            }
+        }
+    }
+
+    let months = months
+        .into_iter()
+        .map(|m| render_month(m, today).unwrap())
+        .collect::<Vec<_>>();
+
+    for c in months.chunks(3) {
+        match c {
+            &[ref m0] => {
+                for l0 in m0.iter() {
+                    if !l0.trim().is_empty() {
+                        println!("{}", l0);
+                    }
                 }
             }
-            println!();
+            &[ref m0, ref m1] => {
+                for (l0, l1) in m0.iter().zip(m1.iter()) {
+                    if !(l0.trim().is_empty() && l1.trim().is_empty()) {
+                        println!("{}    {}", l0, l1);
+                    }
+                }
+            }
+            &[ref m0, ref m1, ref m2] => {
+                for ((l0, l1), l2) in m0.iter().zip(m1.iter()).zip(m2.iter()) {
+                    if !(l0.trim().is_empty() && l1.trim().is_empty() && l2.trim().is_empty()) {
+                        println!("{}    {}    {}", l0, l1, l2);
+                    }
+                }
+            }
+            _ => unreachable!(),
         }
     }
 }

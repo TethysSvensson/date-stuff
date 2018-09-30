@@ -6,3 +6,4 @@ authors = ["Mathias Svensson <freaken@freaken.dk>"]
 [dependencies]
 chrono = "0.4.3"
 colored = "1.6.0"
+structopt = "0.2.10"
