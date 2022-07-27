@@ -1,9 +1,10 @@
 [package]
 name = "date-stuff"
 version = "0.1.0"
-authors = ["Mathias Svensson <freaken@freaken.dk>"]
+edition = "2021"
 
 [dependencies]
-chrono = "0.4.3"
-colored = "1.6.0"
-structopt = "0.2.10"
+colored = "2.0.0"
+clap = { version = "3.2.15", features = ["derive"] }
+time = { version = "0.3.11", features = ["local-offset"] }
+color-eyre = "0.6.2"
