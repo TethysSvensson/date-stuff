@@ -1,3 +1,3 @@
 final: prev: {
-  date-stuff = prev.callPackage ./derivation.nix {};
+  date-stuff = prev.callPackage ./derivation.nix { };
 }

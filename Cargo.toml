@@ -1,10 +1,10 @@
 [package]
+edition = "2021"
 name = "date-stuff"
 version = "0.1.0"
-edition = "2021"
 
 [dependencies]
-colored = "2.0.0"
-clap = { version = "3.2.15", features = ["derive"] }
-time = { version = "0.3.11", features = ["local-offset"] }
-color-eyre = "0.6.2"
+clap = { version = "4.5.20", features = ["derive", "color"] }
+color-eyre = "0.6.3"
+colored = "2.1.0"
+time = { version = "0.3.36", features = ["local-offset"] }

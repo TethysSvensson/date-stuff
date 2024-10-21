@@ -3,5 +3,5 @@ rustPlatform.buildRustPackage rec {
   pname = "date-stuff";
   version = "0.1.0";
   src = ./.;
-  cargoSha256 = "sha256-Oq2GTXpNM3ztOJCxiZeY+q6E0L08GmW6QM6b4j/lBCE=";
+  cargoSha256 = "sha256-Nsj9h6BXhUuxHyACEx0v45hd2qHGX8ZLW2AJWjR961I=";
 }

@@ -1,6 +1,9 @@
 use std::env;
 
-use clap::Parser;
+use clap::{
+    builder::{styling::AnsiColor, Styles},
+    Parser,
+};
 use color_eyre::eyre::{eyre, ContextCompat, Result, WrapErr};
 use colored::Colorize;
 use time::{Date, Month, Weekday};
@@ -142,8 +145,16 @@ impl CalendarMonth {
     }
 }
 
+fn clap_v3_styling() -> Styles {
+    Styles::styled()
+        .header(AnsiColor::Yellow.on_default())
+        .usage(AnsiColor::Green.on_default())
+        .literal(AnsiColor::Green.on_default())
+        .placeholder(AnsiColor::Green.on_default())
+}
+
 #[derive(Debug, clap::Parser)]
-#[structopt(name = "date-stuff", about = "A better cal replacement")]
+#[command(name = "date-stuff", about = "A better cal replacement", styles = clap_v3_styling())]
 struct Opt {
     #[clap(short = 'b')]
     before: Option<u32>,
