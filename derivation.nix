@@ -7,5 +7,5 @@ rustPlatform.buildRustPackage {
   pname = "date-stuff";
   version = "0.1.0";
   src = nix-gitignore.gitignoreSource [ "*.nix" ] ./.;
-  cargoHash = "sha256-hT8xpGQyxY/No/kN+garr+eDAV/gdqBNyqz3jF/eNdQ=";
+  cargoHash = "sha256-AWb1uRivGBOXkyhapRSMPep6eX0S8wblGmTuV13NpYs=";
 }
