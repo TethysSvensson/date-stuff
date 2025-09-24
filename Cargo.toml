@@ -4,7 +4,7 @@ name = "date-stuff"
 version = "0.1.0"
 
 [dependencies]
-clap = { version = "4.5.38", features = ["derive", "color"] }
-color-eyre = "0.6.4"
+clap = { version = "4.5.48", features = ["derive", "color"] }
+color-eyre = "0.6.5"
 colored = "3.0.0"
-time = { version = "0.3.41", features = ["local-offset"] }
+time = { version = "0.3.44", features = ["local-offset"] }
