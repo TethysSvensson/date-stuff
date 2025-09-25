@@ -268,21 +268,21 @@ fn main() -> Result<()> {
 
     for c in months.chunks(3) {
         match c {
-            &[ref m0] => {
+            [m0] => {
                 for l0 in m0 {
                     if !l0.trim().is_empty() {
                         println!("{}", l0);
                     }
                 }
             }
-            &[ref m0, ref m1] => {
+            [m0, m1] => {
                 for (l0, l1) in m0.iter().zip(m1) {
                     if !(l0.trim().is_empty() && l1.trim().is_empty()) {
                         println!("{}    {}", l0, l1);
                     }
                 }
             }
-            &[ref m0, ref m1, ref m2] => {
+            [m0, m1, m2] => {
                 for ((l0, l1), l2) in m0.iter().zip(m1).zip(m2) {
                     if !(l0.trim().is_empty() && l1.trim().is_empty() && l2.trim().is_empty()) {
                         println!("{}    {}    {}", l0, l1, l2);
